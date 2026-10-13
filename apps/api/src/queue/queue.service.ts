@@ -12,7 +12,7 @@ import { Prisma } from '@queueexpress/db';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueueGateway } from '../realtime/queue.gateway';
 import { StoresService } from '../stores/stores.service';
-import type { CallNextDto, CreateTicketDto } from './dto/queue.dto';
+import type { CallNextDto, CreateTicketDto, ManualTicketDto } from './dto/queue.dto';
 
 const MAX_TICKET_NUM_RETRY = 5;
 const UPCOMING_COUNT = 5;
@@ -415,6 +415,92 @@ export class QueueService {
     await this.broadcastQueueEvent(cancelled, SOCKET_EVENTS.QUEUE_UPDATED);
 
     return cancelled;
+  }
+
+  // ------------------------------------------------------------------
+  // Kontrol operator tambahan: manual, reset harian, hapus tertahan
+  // ------------------------------------------------------------------
+
+  /**
+   * Tambah antrean manual oleh operator (walk-in / telepon / reservasi).
+   * Sama seperti createTicket, tapi customerName boleh dikosongkan dan
+   * dicatat sebagai "Walk-in" di log.
+   */
+  async createManualTicket(storeSlug: string, dto: ManualTicketDto): Promise<QueueRow> {
+    const created = await this.createTicket(storeSlug, {
+      serviceId: dto.serviceId,
+      customerName: dto.customerName?.trim() ? dto.customerName.trim() : 'Walk-in',
+    });
+
+    this.logger.log(`Tiket manual ${created.ticketNum} dibuat operator untuk ${storeSlug}`);
+
+    return created;
+  }
+
+  /**
+   * Reset antrean harian: menghapus seluruh tiket milik store sehingga
+   * penomoran (count-based per prefix, mis. A-001) kembali dari awal.
+   * COMPLETED ikut dihapus — panggil hanya setelah konfirmasi operator
+   * (mis. tutup toko / buka hari baru).
+   */
+  async resetDailyQueue(
+    storeSlug: string,
+  ): Promise<{ storeId: string; storeSlug: string; deleted: number; resetAt: string }> {
+    const store = await this.stores.findBySlugOrFail(storeSlug);
+
+    const { count } = await this.prisma.db.queue.deleteMany({
+      where: { storeId: store.id },
+    });
+
+    const at = new Date().toISOString();
+    this.gateway.broadcastToStore(store.id, SOCKET_EVENTS.DISPLAY_REFRESH, {
+      storeId: store.id,
+      reason: 'queue:reset',
+    });
+    this.gateway.broadcastToStore(store.id, SOCKET_EVENTS.STATS_UPDATED, {
+      storeId: store.id,
+      reason: 'queue:reset',
+    });
+    this.gateway.broadcastToStore(store.id, SOCKET_EVENTS.QUEUE_UPDATED, {
+      storeId: store.id,
+      queueId: null,
+      ticketNum: null,
+      status: 'RESET',
+      at,
+    });
+    this.logger.log(`Reset antrean harian ${storeSlug}: ${count} tiket dihapus`);
+
+    return { storeId: store.id, storeSlug, deleted: count, resetAt: at };
+  }
+
+  /**
+   * Hapus permanen satu tiket yang tertahan (duplikat / macet / data uji).
+   * Berbeda dengan cancel()/skip() yang hanya mengubah status.
+   */
+  async removeTicket(ticketId: string): Promise<{ id: string; ticketNum: string; deleted: true }> {
+    const ticket = await this.requireQueue(ticketId);
+
+    await this.prisma.db.queue.delete({ where: { id: ticket.id } });
+
+    const at = new Date().toISOString();
+    this.gateway.broadcastToStore(ticket.storeId, SOCKET_EVENTS.DISPLAY_REFRESH, {
+      storeId: ticket.storeId,
+      reason: 'queue:deleted',
+    });
+    this.gateway.broadcastToStore(ticket.storeId, SOCKET_EVENTS.STATS_UPDATED, {
+      storeId: ticket.storeId,
+      reason: 'queue:deleted',
+    });
+    this.gateway.broadcastToStore(ticket.storeId, SOCKET_EVENTS.QUEUE_UPDATED, {
+      storeId: ticket.storeId,
+      queueId: ticket.id,
+      ticketNum: ticket.ticketNum,
+      status: 'DELETED',
+      at,
+    });
+    this.logger.log(`Tiket ${ticket.ticketNum} dihapus permanen oleh operator`);
+
+    return { id: ticket.id, ticketNum: ticket.ticketNum, deleted: true as const };
   }
 
   // ------------------------------------------------------------------

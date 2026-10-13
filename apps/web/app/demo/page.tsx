@@ -119,13 +119,13 @@ export default function DemoPage(): ReactNode {
             <MonitorPlay className="size-4" aria-hidden /> Sisi Operator
           </h2>
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.p
               key={board?.currentlyServing?.ticketNum ?? 'kosong'}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 10, scale: 0.97, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -10, scale: 0.98, filter: 'blur(4px)' }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
               className="queue-ticket-number mt-4 text-4xl font-bold text-queue-accent"
             >
               {board?.currentlyServing?.ticketNum ?? '--'}

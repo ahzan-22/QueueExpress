@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { QueueService } from './queue.service';
 
 /**
@@ -39,5 +39,14 @@ export class TicketsController {
   @Post(':ticketId/cancel')
   cancel(@Param('ticketId') ticketId: string) {
     return this.queue.cancel(ticketId);
+  }
+
+  /**
+   * Hapus permanen antrean yang tertahan (mis. duplikat / data uji / macet).
+   * Berbeda dengan cancel/skip yang hanya mengubah status.
+   */
+  @Delete(':ticketId')
+  remove(@Param('ticketId') ticketId: string) {
+    return this.queue.removeTicket(ticketId);
   }
 }

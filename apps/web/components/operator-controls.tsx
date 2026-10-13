@@ -99,8 +99,12 @@ export function BigButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      whileTap={disabled ? undefined : { scale: 0.97 }}
-      className={`flex min-h-28 flex-col items-start justify-between gap-2 rounded-2xl p-5 text-left text-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${tones[tone]} ${className}`}
+      // Respons sentuh instan: skala kecil + spring kaku, tanpa delay.
+      whileTap={disabled ? undefined : { scale: 0.96 }}
+      whileHover={disabled ? undefined : { scale: 1.015 }}
+      transition={{ type: 'spring', stiffness: 600, damping: 32 }}
+      style={{ willChange: 'transform' }}
+      className={`flex min-h-28 flex-col items-start justify-between gap-2 rounded-2xl p-5 text-left text-lg font-semibold transition-[transform,background-color,opacity] duration-100 touch-manipulation select-none active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 ${tones[tone]} ${className}`}
     >
       <span className="flex items-center gap-3">
         {icon}

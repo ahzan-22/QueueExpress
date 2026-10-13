@@ -21,6 +21,10 @@ export function useStoreSocket(
   // versi segar tanpa perlu re-subscribe setiap render.
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
+  // Coalesce burst event (satu aksi server mem-broadcast 2-3 event sekaligus)
+  // menjadi satu refresh. Tanpa ini, 3 fetch beruntun = lag.
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastEventRef = useRef<SocketEventName | null>(null);
 
   useEffect(() => {
     if (!storeId) {
@@ -29,7 +33,12 @@ export function useStoreSocket(
 
     const socket = io(config.socketUrl, {
       transports: ['websocket', 'polling'],
-      reconnectionDelay: 800,
+      // Reconnect agresif saat awal putus (terasa instan), lalu melambat.
+      reconnectionDelay: 250,
+      reconnectionDelayMax: 2_500,
+      randomizationFactor: 0.3,
+      timeout: 5_000,
+      autoConnect: true,
     });
 
     socketRef.current = socket;
@@ -56,10 +65,27 @@ export function useStoreSocket(
     ];
 
     for (const eventName of broadcastEvents) {
-      socket.on(eventName, () => onEventRef.current?.(eventName));
+      socket.on(eventName, () => {
+        lastEventRef.current = eventName;
+        // Tunggu 90ms: jika event lain datang dalam jeda itu, gabung jadi 1 refresh.
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+          debounceRef.current = null;
+          const event = lastEventRef.current;
+          if (event) {
+            onEventRef.current?.(event);
+          }
+        }, 90);
+      });
     }
 
     return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
       try {
         socket.emit(SOCKET_EVENTS.UNSUBSCRIBE_STORE, { storeId });
       } catch {

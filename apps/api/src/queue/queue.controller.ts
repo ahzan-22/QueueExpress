@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { QueueService } from './queue.service';
-import { CallNextDto, CreateTicketDto } from './dto/queue.dto';
+import { CallNextDto, CreateTicketDto, ManualTicketDto } from './dto/queue.dto';
 
 /** Endpoint yang butuh storeSlug sebagai konteks (dipakai setelah scan QR). */
 @Controller('stores/:storeSlug/queue')
@@ -34,5 +34,24 @@ export class QueueController {
   @Post('call-next')
   callNext(@Param('storeSlug') storeSlug: string, @Body() dto: CallNextDto) {
     return this.queue.callNext(storeSlug, dto);
+  }
+
+  /**
+   * Tambah antrean manual oleh operator (walk-in / telepon).
+   * Body: { serviceId?, customerName? }.
+   */
+  @Post('manual')
+  createManualTicket(@Param('storeSlug') storeSlug: string, @Body() dto: ManualTicketDto) {
+    return this.queue.createManualTicket(storeSlug, dto);
+  }
+
+  /**
+   * Reset antrean harian: menghapus seluruh tiket milik store sehingga
+   * penomoran kembali dari awal (mis. A-001).
+   * Operasi destruktif — panggil hanya setelah konfirmasi operator.
+   */
+  @Post('reset')
+  resetDaily(@Param('storeSlug') storeSlug: string) {
+    return this.queue.resetDailyQueue(storeSlug);
   }
 }
