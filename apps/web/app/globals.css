@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+/* Token desain QueueExpress (PRD section C.1 - futuristic / sleek) */
+@theme {
+  --color-queue-bg: #070b14;
+  --color-queue-surface: #0f172a;
+  --color-queue-accent: #22d3ee;
+  --color-queue-accent-strong: #06b6d4;
+  --color-queue-success: #34d399;
+  --color-queue-warn: #fbbf24;
+  --color-queue-danger: #f87171;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-queue-bg);
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Latar radial halus untuk layar display & halaman marketing */
+.queue-backdrop {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.14), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(52, 211, 153, 0.12), transparent 40%),
+    var(--color-queue-bg);
+}
+
+/* Angka tiket besar harus terbaca dari jauh (TV Display Board) */
+.queue-ticket-number {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

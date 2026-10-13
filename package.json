@@ -1,0 +1,36 @@
+{
+  "name": "queueexpress",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QueueExpress (AntriLokal) - real-time digital queue system for local businesses",
+  "packageManager": "bun@1.4.0",
+  "engines": {
+    "bun": ">=1.2.0",
+    "node": ">=20.19.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md}\"",
+    "db:generate": "bun --filter @queueexpress/db generate",
+    "db:migrate": "bun --filter @queueexpress/db migrate",
+    "db:deploy": "bun --filter @queueexpress/db deploy",
+    "db:push": "bun --filter @queueexpress/db push",
+    "db:studio": "bun --filter @queueexpress/db studio",
+    "db:seed": "bun --filter @queueexpress/db seed"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "prettier": "^3.9.9",
+    "turbo": "^2.11.7",
+    "typescript": "^5.9.3"
+  }
+}

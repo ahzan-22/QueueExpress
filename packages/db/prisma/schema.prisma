@@ -1,0 +1,72 @@
+// QueueExpress - Prisma schema
+// PRD section 5. Perhatikan perbedaan dengan draft PRD:
+//   1. Generator memakai `prisma-client` (Prisma 7) sehingga `output` wajib diisi.
+//   2. `moduleFormat = "cjs"` dipakai karena apps/api (NestJS) berjalan di CommonJS.
+//   3. `url` dipindah ke prisma.config.ts (deprecated di dalam datasource block).
+//   4. Ditambahkan @@unique([storeId, ticketNum]) sesuai catatan PRD section 5.3.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum QueueStatus {
+  WAITING
+  CALLED
+  PROCESSING
+  COMPLETED
+  SKIPPED
+  CANCELLED
+}
+
+model Store {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  address   String?
+  qrCodeUrl String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  services Service[]
+  queues   Queue[]
+
+  @@map("stores")
+}
+
+model Service {
+  id         String @id @default(uuid())
+  storeId    String
+  store      Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name       String
+  estMinutes Int    @default(15)
+
+  queues Queue[]
+
+  @@index([storeId])
+  @@map("services")
+}
+
+model Queue {
+  id           String      @id @default(uuid())
+  storeId      String
+  store        Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  serviceId    String
+  service      Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  ticketNum    String
+  customerName String?
+  status       QueueStatus @default(WAITING)
+  createdAt    DateTime    @default(now())
+  calledAt     DateTime?
+  completedAt  DateTime?
+
+  @@unique([storeId, ticketNum], name: "storeId_ticketNum")
+  @@index([storeId, status, createdAt])
+  @@index([serviceId, status])
+  @@map("queues")
+}
