@@ -24,7 +24,9 @@ export function validateEnv(raw: Record<string, unknown>): EnvConfig {
   const databaseUrl = requiredString('DATABASE_URL');
   const webOrigin = raw['WEB_ORIGIN'] === undefined ? 'http://localhost:3000' : requiredString('WEB_ORIGIN');
 
-  const portRaw = raw['API_PORT'];
+  // Platform cloud (Render/Railway) menyuntik PORT otomatis — pakai sebagai
+  // fallback agar API listen di port yang benar tanpa set manual.
+  const portRaw = raw['API_PORT'] ?? raw['PORT'];
   const port = portRaw === undefined ? 4000 : Number(portRaw);
 
   if (Number.isNaN(port)) {
