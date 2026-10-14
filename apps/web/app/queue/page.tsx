@@ -96,7 +96,7 @@ function QueueEntry(): ReactNode {
           type="button"
           onClick={() => void handleTakeTicket()}
           disabled={submitting || !serviceId}
-          className="mt-6 w-full rounded-2xl bg-queue-accent py-4 text-lg font-semibold text-queue-bg transition hover:bg-queue-accent-strong disabled:opacity-40"
+          className="btn-neon btn-amber mt-6 w-full rounded-2xl py-4 text-lg font-bold"
         >
           {submitting ? 'Membuat tiket...' : 'Ambil Nomor Antrean'}
         </button>

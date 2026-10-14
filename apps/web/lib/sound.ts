@@ -86,12 +86,19 @@ export function speakAnnouncement(text: string): void {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'id-ID';
     utterance.rate = 0.95;
-    utterance.pitch = 1;
-    // Pilih suara id-ID bila tersedia, fallback ke default.
+    utterance.pitch = 1.05;
+    // Pilih suara Indonesia bila ada. Kalau tidak ada (umum di Chrome Windows
+    // yang cuma punya suara Inggris — inilah yang bikin pengumuman terdengar
+    // "bule"), fallback ke Melayu (serumpun) lalu default.
     const voices = synth.getVoices();
-    const idVoice = voices.find((v) => v.lang.toLowerCase().startsWith('id'));
-    if (idVoice) {
-      utterance.voice = idVoice;
+    const voice =
+      voices.find((v) => v.lang.toLowerCase().startsWith('id')) ??
+      voices.find((v) => v.lang.toLowerCase().startsWith('ms')) ??
+      voices.find((v) => v.lang.toLowerCase().startsWith('jv')) ??
+      null;
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
     }
     synth.speak(utterance);
   } catch {
@@ -99,12 +106,65 @@ export function speakAnnouncement(text: string): void {
   }
 }
 
+const DIGIT_ID = [
+  'kosong',
+  'satu',
+  'dua',
+  'tiga',
+  'empat',
+  'lima',
+  'enam',
+  'tujuh',
+  'delapan',
+  'sembilan',
+] as const;
+
+/**
+ * Eja nomor tiket menjadi kata Bahasa Indonesia, mis. "A-001" -> "A, kosong kosong satu".
+ * Angka dieja kata-per-kata supaya tetap jelas walau browser cuma punya suara Inggris
+ * (yang akan membaca "0" sebagai "zero" kalau dikirim mentah).
+ */
+export function spellTicketId(ticketNum: string): string {
+  const parts = ticketNum.split('-');
+  const spoken: string[] = [];
+
+  for (const part of parts) {
+    if (/^\d+$/.test(part)) {
+      spoken.push(
+        part
+          .split('')
+          .map((d) => DIGIT_ID[Number(d)] ?? d)
+          .join(' '),
+      );
+    } else if (/^[a-zA-Z]+$/.test(part)) {
+      // Huruf dieja satu-satu ("CK" -> "C K") supaya tidak dibaca sebagai kata Inggris.
+      spoken.push(part.toUpperCase().split('').join(' '));
+    } else if (part) {
+      spoken.push(part);
+    }
+  }
+
+  return spoken.join(', ');
+}
+
+/** Varian sapaan santai, dipilih acak tiap panggilan biar nggak monoton. */
+const ANNOUNCEMENT_TEMPLATES: ReadonlyArray<(spelled: string) => string> = [
+  (s) => `Nomor antrean ${s}, yuk merapat ke lokasi layanan ya!`,
+  (s) => `Halo! Nomor antrean ${s}, giliran kamu nih, langsung merapat ya!`,
+  (s) => `Panggilan untuk nomor antrean ${s}, ditunggu di lokasi layanan!`,
+  (s) => `Nomor antrean ${s}, gaskeun merapat, giliranmu sudah tiba!`,
+];
+
 /** Kombinasi standar panggilan antrean: chime lalu suara. */
 export function announceQueue(ticketNum: string): void {
   playChime();
   // Beri jeda agar chime terdengar dulu sebelum suara bicara.
   window.setTimeout(() => {
-    speakAnnouncement(`Nomor ${ticketNum}, silakan menuju lokasi layanan`);
+    const spelled = spellTicketId(ticketNum);
+    const template =
+      ANNOUNCEMENT_TEMPLATES[Math.floor(Math.random() * ANNOUNCEMENT_TEMPLATES.length)] ??
+      ((s: string) => `Nomor antrean ${s}, yuk merapat ke lokasi layanan ya!`);
+    speakAnnouncement(template(spelled));
   }, 650);
 }
 
@@ -112,10 +172,22 @@ export function announceQueue(ticketNum: string): void {
 export function unlockAudio(): void {
   playChime();
   cancelSpeech();
-  // Panaskan daftar voices di Chrome (async).
+  // Panaskan daftar voices di Chrome (async). Chrome sering mengembalikan
+  // daftar kosong di awal, lalu mengisi lewat event voiceschanged — tanpa ini
+  // suara Indonesia tidak pernah ketemu dan fallback ke Inggris.
   try {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
+      const synth = window.speechSynthesis;
+      synth.getVoices();
+      if (typeof synth.onvoiceschanged !== 'undefined') {
+        synth.onvoiceschanged = () => {
+          try {
+            synth.getVoices();
+          } catch {
+            // abaikan
+          }
+        };
+      }
     }
   } catch {
     // abaikan

@@ -1,17 +1,30 @@
 @import 'tailwindcss';
 
-/* Token desain QueueExpress (PRD section C.1 - futuristic / sleek) */
+/* =============================================================================
+ * QueueExpress — Deep Space Cyber theme
+ * Latar: Deep Space Black, aksen neon Amber #ff7a00, Emerald, dan Neon-Cyan
+ * dengan efek soft glow + glassmorphism di seluruh aplikasi.
+ * ========================================================================== */
 @theme {
-  --color-queue-bg: #070b14;
-  --color-queue-surface: #0f172a;
-  --color-queue-accent: #22d3ee;
-  --color-queue-accent-strong: #06b6d4;
-  --color-queue-success: #34d399;
-  --color-queue-warn: #fbbf24;
-  --color-queue-danger: #f87171;
+  --color-void: #05060f;
+  --color-queue-bg: #05060f;
+  --color-queue-surface: #0b1020;
+  --color-queue-panel: #0d1428;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  --color-neon-amber: #ff7a00;
+  --color-neon-amber-soft: #ffb300;
+  --color-neon-emerald: #10e59a;
+  --color-neon-cyan: #22d3ee;
+
+  --color-queue-accent: #22d3ee;
+  --color-queue-accent-strong: #0e9db8;
+  --color-queue-success: #10e59a;
+  --color-queue-warn: #ff7a00;
+  --color-queue-danger: #ff4d6d;
+
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
 }
 
 :root {
@@ -23,14 +36,39 @@ body {
   color: #e2e8f0;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Latar radial halus untuk layar display & halaman marketing */
+::selection {
+  background: rgba(255, 122, 0, 0.45);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+ * Latar Deep Space: radial neon + grid cyber samar
+ * ------------------------------------------------------------------------ */
 .queue-backdrop {
   background:
-    radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.14), transparent 45%),
-    radial-gradient(circle at 80% 30%, rgba(52, 211, 153, 0.12), transparent 40%),
+    radial-gradient(52rem 30rem at 12% -6%, rgba(255, 122, 0, 0.16), transparent 60%),
+    radial-gradient(46rem 28rem at 88% 8%, rgba(34, 211, 238, 0.14), transparent 60%),
+    radial-gradient(40rem 26rem at 50% 110%, rgba(16, 229, 154, 0.1), transparent 60%),
     var(--color-queue-bg);
+}
+
+.cyber-grid {
+  position: relative;
+}
+
+.cyber-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
 }
 
 /* Angka tiket besar harus terbaca dari jauh (TV Display Board) */
@@ -38,6 +76,389 @@ body {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.08em;
+}
+
+/* Judul display dengan kesan futuristik */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Teks gradasi neon Amber -> Cyan */
+.text-neon-gradient {
+  background: linear-gradient(100deg, #ffb300 0%, #ff7a00 38%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-glow-amber {
+  color: #ffb300;
+  text-shadow:
+    0 0 18px rgba(255, 122, 0, 0.65),
+    0 0 46px rgba(255, 122, 0, 0.3);
+}
+
+.text-glow-cyan {
+  color: #a5f3fc;
+  text-shadow:
+    0 0 18px rgba(34, 211, 238, 0.6),
+    0 0 46px rgba(34, 211, 238, 0.28);
+}
+
+/* ---------------------------------------------------------------------------
+ * Glassmorphism: kartu kaca dengan border bersinar + bayangan halus
+ * ------------------------------------------------------------------------ */
+.glass {
+  background: linear-gradient(135deg, rgba(20, 28, 52, 0.72), rgba(10, 15, 32, 0.6));
+  border: 1px solid rgba(148, 197, 255, 0.14);
+  box-shadow:
+    0 18px 50px -18px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.glass-bright {
+  background: linear-gradient(135deg, rgba(30, 42, 78, 0.66), rgba(13, 20, 40, 0.55));
+  border: 1px solid rgba(148, 197, 255, 0.2);
+  box-shadow:
+    0 18px 50px -18px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-amber {
+  border: 1px solid rgba(255, 122, 0, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 122, 0, 0.12),
+    0 0 34px -6px rgba(255, 122, 0, 0.45),
+    0 18px 50px -18px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-cyan {
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.1),
+    0 0 34px -6px rgba(34, 211, 238, 0.4),
+    0 18px 50px -18px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-emerald {
+  border: 1px solid rgba(16, 229, 154, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(16, 229, 154, 0.1),
+    0 0 34px -6px rgba(16, 229, 154, 0.4),
+    0 18px 50px -18px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------------------------------------------------------------------
+ * Tombol neon: gradasi glowing + efek hover/active
+ * ------------------------------------------------------------------------ */
+.btn-neon {
+  position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.btn-neon:hover:not(:disabled) {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.btn-neon:active:not(:disabled) {
+  transform: translateY(1px) scale(0.97);
+}
+
+.btn-neon:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  filter: saturate(0.4);
+}
+
+.btn-amber {
+  background: linear-gradient(135deg, #ffb300 0%, #ff7a00 55%, #ff4d00 100%);
+  color: #1a0d00;
+  box-shadow:
+    0 0 24px -4px rgba(255, 122, 0, 0.75),
+    0 10px 28px -10px rgba(255, 122, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-amber:hover:not(:disabled) {
+  box-shadow:
+    0 0 36px -4px rgba(255, 122, 0, 0.9),
+    0 12px 34px -10px rgba(255, 122, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-emerald {
+  background: linear-gradient(135deg, #5ef2b8 0%, #10e59a 55%, #0aa872 100%);
+  color: #02281b;
+  box-shadow:
+    0 0 24px -4px rgba(16, 229, 154, 0.7),
+    0 10px 28px -10px rgba(16, 229, 154, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-emerald:hover:not(:disabled) {
+  box-shadow:
+    0 0 36px -4px rgba(16, 229, 154, 0.9),
+    0 12px 34px -10px rgba(16, 229, 154, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-cyan {
+  background: linear-gradient(135deg, #8bf5ff 0%, #22d3ee 55%, #0e8fa8 100%);
+  color: #03252c;
+  box-shadow:
+    0 0 24px -4px rgba(34, 211, 238, 0.7),
+    0 10px 28px -10px rgba(34, 211, 238, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-cyan:hover:not(:disabled) {
+  box-shadow:
+    0 0 36px -4px rgba(34, 211, 238, 0.9),
+    0 12px 34px -10px rgba(34, 211, 238, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-ghost-neon {
+  background: rgba(148, 197, 255, 0.06);
+  border: 1px solid rgba(148, 197, 255, 0.22);
+  color: #e8f4ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.btn-ghost-neon:hover:not(:disabled) {
+  background: rgba(148, 197, 255, 0.12);
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow:
+    0 0 22px -6px rgba(34, 211, 238, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger-neon {
+  background: rgba(255, 77, 109, 0.1);
+  border: 1px solid rgba(255, 77, 109, 0.45);
+  color: #ff8fa3;
+}
+
+.btn-danger-neon:hover:not(:disabled) {
+  background: rgba(255, 77, 109, 0.2);
+  box-shadow: 0 0 24px -6px rgba(255, 77, 109, 0.7);
+}
+
+/* ---------------------------------------------------------------------------
+ * Status badge dinamis dengan titik berdenyut
+ * ------------------------------------------------------------------------ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 10px 2px currentColor;
+  animation: badge-ping 1.6s ease-in-out infinite;
+}
+
+.badge-serving {
+  color: #ffc24b;
+  background: rgba(255, 122, 0, 0.14);
+  border-color: rgba(255, 122, 0, 0.55);
+  box-shadow: 0 0 20px -4px rgba(255, 122, 0, 0.7);
+}
+
+.badge-queued {
+  color: #67e8f9;
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 20px -6px rgba(34, 211, 238, 0.6);
+}
+
+.badge-done {
+  color: #5ef2b8;
+  background: rgba(16, 229, 154, 0.12);
+  border-color: rgba(16, 229, 154, 0.5);
+  box-shadow: 0 0 20px -6px rgba(16, 229, 154, 0.6);
+}
+
+.badge-danger {
+  color: #ff8fa3;
+  background: rgba(255, 77, 109, 0.12);
+  border-color: rgba(255, 77, 109, 0.5);
+}
+
+.badge-muted {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+@keyframes badge-ping {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Avatar pelanggan: lingkaran gradasi + ring neon
+ * ------------------------------------------------------------------------ */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 0 2px rgba(5, 6, 15, 0.9),
+    0 0 0 3.5px var(--avatar-ring, rgba(34, 211, 238, 0.6)),
+    0 0 18px -2px var(--avatar-ring, rgba(34, 211, 238, 0.6));
+}
+
+/* ---------------------------------------------------------------------------
+ * Sidebar futuristik
+ * ------------------------------------------------------------------------ */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94a3b8;
+  border: 1px solid transparent;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.sidebar-link:hover {
+  color: #e2e8f0;
+  background: rgba(148, 197, 255, 0.06);
+}
+
+.sidebar-link-active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.22), rgba(255, 122, 0, 0.06));
+  border-color: rgba(255, 122, 0, 0.45);
+  box-shadow:
+    0 0 22px -6px rgba(255, 122, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-link-active svg {
+  color: #ffb300;
+  filter: drop-shadow(0 0 6px rgba(255, 122, 0, 0.9));
+}
+
+/* ---------------------------------------------------------------------------
+ * Kartu statistik elegan
+ * ------------------------------------------------------------------------ */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.2rem;
+  right: 1.2rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent, var(--stat-glow, rgba(34, 211, 238, 0.8)), transparent);
+  box-shadow: 0 0 12px 1px var(--stat-glow, rgba(34, 211, 238, 0.8));
+}
+
+.stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.9rem;
+  box-shadow: 0 6px 18px -6px var(--stat-glow, rgba(34, 211, 238, 0.6));
+}
+
+/* Garis pemisah neon */
+.neon-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 122, 0, 0.5), rgba(34, 211, 238, 0.5), transparent);
+}
+
+/* Bilah progress tipis untuk radial chart legend */
+.progress-track {
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.15);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #ff7a00, #ffb300);
+  box-shadow: 0 0 12px rgba(255, 122, 0, 0.8);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Scrollbar ramping untuk daftar antrean */
+.slim-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.slim-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 122, 0, 0.35);
+  border-radius: 9999px;
+}
+
+.slim-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

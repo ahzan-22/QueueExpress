@@ -1,41 +1,9 @@
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Ban, BellRing, CheckCircle2, Clock3, LoaderCircle, SkipForward, Users } from 'lucide-react';
-import type { QueueStatus, TicketViewDto } from '@queueexpress/shared';
-
-/** Label Bahasa Indonesia untuk setiap status antrean. */
-const STATUS_META: Record<QueueStatus, { label: string; className: string; icon: ReactNode }> = {
-  WAITING: {
-    label: 'Menunggu giliran',
-    className: 'bg-white/10 text-slate-200',
-    icon: <Clock3 className="size-4" aria-hidden />,
-  },
-  CALLED: {
-    label: 'Nomor Anda dipanggil',
-    className: 'bg-queue-accent text-queue-bg',
-    icon: <BellRing className="size-4" aria-hidden />,
-  },
-  PROCESSING: {
-    label: 'Sedang dilayani',
-    className: 'bg-queue-warn/15 text-queue-warn',
-    icon: <LoaderCircle className="size-4" aria-hidden />,
-  },
-  COMPLETED: {
-    label: 'Selesai dilayani',
-    className: 'bg-queue-success/15 text-queue-success',
-    icon: <CheckCircle2 className="size-4" aria-hidden />,
-  },
-  SKIPPED: {
-    label: 'Dilewati (tidak hadir)',
-    className: 'bg-queue-danger/15 text-queue-danger',
-    icon: <SkipForward className="size-4" aria-hidden />,
-  },
-  CANCELLED: {
-    label: 'Dibatalkan',
-    className: 'bg-queue-danger/15 text-queue-danger',
-    icon: <Ban className="size-4" aria-hidden />,
-  },
-};
+import { BellRing, Clock3, Users } from 'lucide-react';
+import type { TicketViewDto } from '@queueexpress/shared';
+import { Avatar } from './avatar';
+import { TicketStatusBadge } from './status-badge';
 
 /**
  * Kartu status pelanggan (PRD section A.2 dan A.3).
@@ -45,30 +13,32 @@ export function LiveStatusCard({ data }: { data: TicketViewDto }): ReactNode {
   const { ticket, currentlyServing, estimatedWaitMinutes, aheadCount, positionsUntilCall } = data;
   const isYourTurn = ticket.status === 'CALLED';
   const isAlmostTurn = !isYourTurn && positionsUntilCall === 1;
-  const statusMeta = STATUS_META[ticket.status];
 
   const tone = isYourTurn
-    ? 'border-queue-accent bg-queue-accent/10'
+    ? 'glass glass-amber'
     : isAlmostTurn
-      ? 'border-queue-warn bg-queue-warn/10'
-      : 'border-white/10 bg-queue-surface/70';
+      ? 'glass border-neon-amber/30'
+      : 'glass';
 
   return (
     <motion.section
       aria-live="polite"
-      className={`rounded-3xl border p-6 backdrop-blur transition-colors ${tone}`}
+      className={`rounded-3xl p-6 transition-colors ${tone}`}
       animate={isYourTurn ? { scale: [1, 1.02, 1] } : { scale: 1 }}
       transition={{ duration: 1.6, repeat: isYourTurn ? Infinity : 0, ease: 'easeInOut' }}
     >
       <header className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm uppercase tracking-widest text-slate-400">Nomor tiket Anda</p>
-          <p className="queue-ticket-number mt-1 text-5xl font-bold text-white sm:text-6xl">
-            {ticket.ticketNum}
-          </p>
-          <p className="mt-2 text-sm text-slate-300">
-            {data.store.name} - {data.service.name}
-          </p>
+        <div className="flex items-center gap-4">
+          <Avatar name={ticket.customerName} size="lg" />
+          <div>
+            <p className="text-xs tracking-[0.24em] text-slate-400 uppercase">Nomor tiket Anda</p>
+            <p className="queue-ticket-number mt-1 text-5xl font-bold text-white sm:text-6xl">
+              {ticket.ticketNum}
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              {data.store.name} - {data.service.name}
+            </p>
+          </div>
         </div>
         <AnimatePresence mode="wait">
           <motion.span
@@ -76,10 +46,8 @@ export function LiveStatusCard({ data }: { data: TicketViewDto }): ReactNode {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${statusMeta.className}`}
           >
-            {statusMeta.icon}
-            {statusMeta.label}
+            <TicketStatusBadge status={ticket.status} />
           </motion.span>
         </AnimatePresence>
       </header>
@@ -88,7 +56,7 @@ export function LiveStatusCard({ data }: { data: TicketViewDto }): ReactNode {
           key="almost"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-4 flex items-center gap-2 rounded-2xl bg-queue-warn/15 px-4 py-2 text-sm font-semibold text-queue-warn"
+          className="mt-4 flex items-center gap-2 rounded-2xl border border-neon-amber/40 bg-neon-amber/15 px-4 py-2 text-sm font-semibold text-[#ffc24b]"
         >
           <BellRing className="size-4" aria-hidden />
           Bersiap, giliran Anda berikutnya
@@ -122,7 +90,7 @@ export function LiveStatusCard({ data }: { data: TicketViewDto }): ReactNode {
 
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: string }): ReactNode {
   return (
-    <div className="rounded-2xl bg-black/25 px-3 py-4">
+    <div className="rounded-2xl border border-white/10 bg-black/25 px-3 py-4">
       <dt className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
         {icon}
         {label}
