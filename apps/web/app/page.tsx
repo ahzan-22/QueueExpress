@@ -37,7 +37,8 @@ const features = [
 ];
 
 const links = [
-  { href: '/operator', label: 'Dashboard Operator', primary: true },
+  { href: '/queue?store=antri-lokal-demo', label: 'Ambil Tiket', primary: true },
+  { href: '/operator', label: 'Dashboard Operator', primary: false },
   { href: '/display/antri-lokal-demo', label: 'TV Display Board', primary: false },
 ];
 
