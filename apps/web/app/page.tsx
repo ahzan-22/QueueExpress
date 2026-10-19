@@ -114,18 +114,7 @@ export default function HomePage(): ReactNode {
           ))}
         </div>
 
-        <section className="glass flex items-start gap-4 rounded-2xl p-6">
-          <span className="stat-icon shrink-0 bg-gradient-to-br from-neon-amber to-neon-cyan text-white shadow-[0_0_18px_-4px_rgba(255,122,0,.8)]">
-            <Zap className="size-5" aria-hidden />
-          </span>
-          <div>
-            <h2 className="font-display text-lg font-semibold text-white">Belum punya toko demo?</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              Jalankan <code className="text-neon-cyan">bun run db:seed</code> untuk membuat store
-              contoh beserta layanan dan tiket menunggu. Rute lengkapnya ada di PRD.md section 4.4.
-            </p>
-          </div>
-        </section>
+        
       </section>
     </main>
   );
