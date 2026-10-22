@@ -1,0 +1,6 @@
+[build]
+buildCommand = "bun install && bun run db:deploy && bun --filter @queueexpress/api build"
+startCommand = "bun --filter @queueexpress/api start"
+
+[deploy]
+rootDirectory = "/workspace"
