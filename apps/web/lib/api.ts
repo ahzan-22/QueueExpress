@@ -30,10 +30,33 @@ export type Store = {
 
 export type StoreWithServices = Store & { services: Service[] };
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  // Timeout 8 detik agar tombol tidak menggantung saat API lambat.
+/**
+ * Render free tier mematikan service setelah 15 menit idle. Request pertama
+ * setelah itu harus menunggu container bangun (~30–60 detik), jadi timeout
+ * per percobaan dinaikkan agar tidak putus di tengah cold start.
+ */
+const REQUEST_TIMEOUT_MS = 65_000;
+const RETRY_DELAY_MS = 1_000;
+
+class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** Error jaringan / timeout boleh diulang; error HTTP (4xx/5xx) tidak. */
+const isRetryable = (error: unknown): boolean =>
+  error instanceof TypeError || (error instanceof Error && error.name === 'AbortError');
+
+async function attemptRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8_000);
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${config.apiBase}${path}`, {
@@ -46,12 +69,30 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     });
 
     if (!response.ok) {
-      throw new Error(`API ${response.status}: ${await response.text()}`);
+      throw new ApiError(`API ${response.status}: ${await response.text()}`, response.status);
     }
 
     return (await response.json()) as T;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = (init?.method ?? 'GET').toUpperCase();
+  // POST/PATCH/DELETE tidak diulang supaya tidak membuat data ganda
+  // (mis. tiket tercetak dua kali) saat server lambat merespons.
+  const maxAttempts = method === 'GET' ? 2 : 1;
+
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await attemptRequest<T>(path, init);
+    } catch (error) {
+      if (attempt >= maxAttempts || !isRetryable(error)) {
+        throw error;
+      }
+      await sleep(RETRY_DELAY_MS);
+    }
   }
 }
 
