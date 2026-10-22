@@ -1,0 +1,6 @@
+# Pastikan file yang dieksekusi di Linux (Render/Docker) selalu memakai LF.
+Dockerfile text eol=lf
+*.sh text eol=lf
+
+# Normalisasi umum untuk sisa file teks.
+* text=auto

@@ -1,0 +1,26 @@
+# Render Blueprint - https://render.com/docs/blueprint-spec
+#
+# Deploy: Dashboard Render > New > Blueprint > pilih repo ini.
+# DATABASE_URL & DIRECT_URL sengaja `sync: false` supaya nilainya diisi
+# manual di dashboard (tidak ikut ter-commit ke git).
+
+services:
+  - type: web
+    name: queueexpress-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: WEB_ORIGIN
+        value: https://queue-express.vercel.app
+      - key: API_GLOBAL_PREFIX
+        value: api
+      - key: SKIP_SEED
+        value: "true"
