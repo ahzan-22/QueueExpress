@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MonitorPlay,
   PlusCircle,
+  QrCode,
   RotateCcw,
   Ticket,
   Zap,
@@ -29,13 +30,15 @@ import { ConnectionBadge } from '@/components/connection-badge';
 import { DailyLoadChart, DailyStatsPanel, OperatorControls } from '@/components/operator-controls';
 import { Avatar } from '@/components/avatar';
 import { StatusBadge } from '@/components/status-badge';
+import { useQrDataUrl } from '@/lib/use-qr-data-url';
 import { useStoreSocket } from '@/lib/use-store-socket';
 
 const DEFAULT_STORE = 'antri-lokal-demo';
 
 const NAV = [
   { href: '/operator', label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { href: '/display/antri-lokal-demo', label: 'TV Display', icon: MonitorPlay, active: false },
+  { href: `/display/${DEFAULT_STORE}`, label: 'TV Display', icon: MonitorPlay, active: false },
+  { href: `/qr/${DEFAULT_STORE}`, label: 'QR Code', icon: QrCode, active: false },
 ];
 
 /** Dashboard operator untuk HP dan tablet (PRD section B). */
@@ -54,6 +57,12 @@ export default function OperatorPage(): ReactNode {
   const [manualName, setManualName] = useState('');
   const [manualServiceId, setManualServiceId] = useState<string | undefined>(undefined);
 
+  // Origin browser dipakai agar QR selalu mengarah ke domain yang sedang dipakai
+  // (production, preview, atau localhost) tanpa hardcode.
+  const [origin, setOrigin] = useState('');
+  const queueUrl = origin ? `${origin}/queue?store=${encodeURIComponent(DEFAULT_STORE)}` : null;
+  const qrDataUrl = useQrDataUrl(queueUrl);
+
   // Cegah setState setelah unmount + cegah fetch tumpang tindih.
   const mountedRef = useRef(true);
   const loadingRef = useRef(false);
@@ -67,6 +76,10 @@ export default function OperatorPage(): ReactNode {
         clearTimeout(refreshTimerRef.current);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
   }, []);
 
   useEffect(() => {
@@ -506,6 +519,40 @@ export default function OperatorPage(): ReactNode {
               </button>
             </section>
           </div>
+
+          <section className="glass rounded-3xl p-5">
+            <div className="flex flex-wrap items-center justify-between gap-5">
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 text-xs tracking-[0.24em] text-slate-400 uppercase">
+                  <QrCode className="size-4 text-neon-amber" aria-hidden />
+                  QR Code Toko
+                </p>
+                <p className="mt-1 text-sm text-slate-400">
+                  Cetak dan tempel di meja kasir. Pelanggan tinggal scan untuk ambil nomor antrean.
+                </p>
+                <p className="mt-3 max-w-full text-xs break-all text-slate-500">{queueUrl ?? ''}</p>
+                <Link
+                  href={`/qr/${DEFAULT_STORE}`}
+                  className="btn-neon btn-amber mt-4 inline-flex rounded-xl px-4 py-2.5 text-sm font-bold"
+                >
+                  Buka &amp; Cetak QR
+                </Link>
+              </div>
+              <div className="rounded-2xl bg-white p-3 shadow-[0_0_24px_-8px_rgba(255,122,0,.7)]">
+                {qrDataUrl ? (
+                  <img
+                    src={qrDataUrl}
+                    alt="QR code untuk mengambil nomor antrean"
+                    width={132}
+                    height={132}
+                    className="size-[132px]"
+                  />
+                ) : (
+                  <div className="size-[132px] animate-pulse rounded-lg bg-slate-200" />
+                )}
+              </div>
+            </div>
+          </section>
 
           <section className="glass rounded-3xl p-5">
             <div className="flex items-center justify-between gap-3">
